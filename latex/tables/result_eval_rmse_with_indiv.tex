@@ -1,0 +1,20 @@
+\begin{tabular}{lllllrrrrr}
+\toprule
+            &                              &      &     & ClusterMethod &   Base &  BottomUp &  MinTrace(mint\_shrink) &  MinTrace(ols) &    SilAvg \\
+level & Strategy & metric & DistMetric &               &        &           &                        &                &           \\
+\midrule
+H\_Cluster13\_All & All\_clusters & rmse & euclidean &        KMeans &  31.44 &     38.22 &                  29.38 &          29.97 &  0.318196 \\
+H\_Cluster2\_All & All\_clusters Ensemble & rmse & euclidean &        KMeans &  30.76 &     38.97 &                  25.85 &          29.46 &  0.633072 \\
+H\_Cluster8\_All & All\_clusters & rmse & dtw &        KMeans &  31.21 &     38.54 &                  26.74 &          30.45 &  0.455365 \\
+H\_Cluster17\_All & All\_clusters Ensemble & rmse & dtw &        KMeans &  31.43 &     37.84 &                  29.20 &          29.56 &  0.766619 \\
+H\_Dominio & Dominio All\_clusters & rmse & euclidean &        KMeans &  36.05 &     42.20 &                  32.37 &          34.10 &       NaN \\
+            & Dominio All\_clusters Ensemble & rmse & euclidean &        KMeans &  36.05 &     42.20 &                  30.97 &          34.01 &       NaN \\
+            & Dominio All\_clusters & rmse & dtw &        KMeans &  36.05 &     42.20 &                  31.21 &          35.01 &       NaN \\
+            & Dominio All\_clusters Ensemble & rmse & dtw &        KMeans &  36.05 &     42.20 &                  32.35 &          33.91 &       NaN \\
+            & Dominio only & rmse & NaN &          None &  36.05 &     42.20 &                  34.88 &          33.84 &       NaN \\
+H\_Cluster11 & Individual\_clusters & rmse & euclidean &        KMeans &  31.38 &     38.33 &                  33.47 &          29.37 &  0.317686 \\
+H\_Cluster9 & Individual\_clusters Ensemble & rmse & euclidean &        KMeans &  30.40 &     38.49 &                  32.13 &          29.24 &  0.799887 \\
+            & Individual\_clusters & rmse & dtw &        KMeans &  30.51 &     38.56 &                  31.96 &          29.81 &  0.481366 \\
+H\_Cluster17 & Individual\_clusters Ensemble & rmse & dtw &        KMeans &  31.43 &     37.84 &                  33.28 &          29.21 &  0.766619 \\
+\bottomrule
+\end{tabular}
