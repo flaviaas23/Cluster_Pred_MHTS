@@ -57,7 +57,7 @@ def get_small_metric_row(df, e_metric, both=0):
 def get_small_metric_row_ind(df, e_metric, col_index_to_filter='level',bottom=0, both=0):
     ''''
     20230817:Criei esta funcao para fazer um filtro do level para pegar os
-    indices que tem Cluster numa pate deles
+    indices que tem Cluster numa parte deles
     depois pensar numa forma de fazer junto com a funcao acima
     Receives a df and returns its row with small column metric value
     '''
@@ -374,39 +374,105 @@ print(latex_table)
 #%%
 ###Fazer a analise do Dominio com cadacluster individualmente
 #### analysis for dominio with individual clusters
-def set_index_value(df):
+def set_index_value(df, ensemble):
     df_dom_ind = get_rows_from_cols(df, 'rmse','H_Dominio')
     ncluster=df.index.get_level_values('level')
     ncluster=[x for x in ncluster if 'H_Cluster' in x ]
-    ncluster=ncluster[0][-1]
+    ncluster=ncluster[0].split('H_Cluster')[1]
+    #ncluster=ncluster[0][-1]
 
     df_index = list(df_dom_ind.index.names)
-    print (df_index)
+    
     df_dom_ind.reset_index(inplace=True)
-    df_dom_ind['Strategy']='Dominio Ind_Cluster'+ncluster+' Ensemble'
+    if ensemble:
+        df_dom_ind['Strategy']='Dominio Ind_Cluster'+ncluster+' Ensemble'
+    else:
+        df_dom_ind['Strategy']='Dominio Ind_Cluster'+ncluster
     df_dom_ind.set_index(df_index, inplace=True)
 
     return df_dom_ind
+#%%
+def get_best_dom_cluster_ind(eval_dir, metric,padrao, ensemble=0):
+
+    eval_H_dom_cluster_ind = read_files(eval_dir, padrao)
+    
+    
+    df_dom_ind_ens={}
+    for n in eval_H_dom_cluster_ind.keys():
+        df_dom_ind_ens[n] = set_index_value(eval_H_dom_cluster_ind[n],ensemble)
+    
+    #concatenate all individual clusters df in only one df: 
+    eval_H_dom_cluster_ind_full = eval_files_concat(df_dom_ind_ens)
+    
+    #1.1 gets the rows with min rmse value
+    df_dom_clu_min= get_small_metric_row(eval_H_dom_cluster_ind_full, metric )
+
+    return df_dom_clu_min
 
 #%%
 ##### Euclidean
 
 eval_dir = 'data/evals_tmp/individuals/dominio_cluster'
 metric = 'rmse'
+#%%
+padrao = 'euclidean_Individual'
+df_dom_clu_euc_min = get_best_dom_cluster_ind(eval_dir, metric,padrao, 0)
+
+#%%
 padrao = 'euclidean_ensemble_Individual'
 
 #df_dom_euc_min = get_best_df_row_metric_H_cluster_ind(eval_dir, padrao, metric)
 
-eval_H_dom_cluster_euc_ensemble_ind = read_files(eval_dir, padrao)
+#%%
+#teste com funcao
+df_dom_clu_euc_ens_min = get_best_dom_cluster_ind(eval_dir, metric,padrao, 1)
+
+#%% 
+##### dtw
+padrao_dtw = 'dtw_Individual'
+df_dom_clu_dtw_min = get_best_dom_cluster_ind(eval_dir, metric,padrao_dtw,0)
+#%%
+##### dtw ensemble
+padrao_dtw = 'dtw_ensemble_Individual'
+df_dom_clu_dtw_ens_min = get_best_dom_cluster_ind(eval_dir, metric,padrao_dtw,1)
 
 #%%
-#concatenate all individual clusters df in only one df: 
-eval_H_dom_cluster_euc_ensemble_ind_full = eval_files_concat(eval_H_dom_cluster_euc_ensemble_ind)
-#
-#%%
-#1.1 gets the rows with min rmse value
-df_dom_clu_euc_ens_min= get_small_metric_row_ind(eval_H_dom_cluster_euc_ensemble_ind_full, metric , col_index_to_filter='level',bottom=0, both=0)
+#concatenate these results
 
+#%%
+eval_file='data/evals_tmp/evaluation_result_rmse_H_dominio_cluster.pkl'
+#%%
+#read the file with results
+df_eval_= pd.read_pickle(eval_file) 
+#%%
+#### Adcionar o resultado destas hierarquias no result_table 
+# e salvar num arquivo e gerar latex format
+df_to_concat={}
+df_to_concat[0] = df_eval_ 
+df_to_concat[1] = df_dom_clu_euc_min
+df_to_concat[2] = df_dom_clu_euc_ens_min 
+df_to_concat[3] = df_dom_clu_dtw_min 
+df_to_concat[4] = df_dom_clu_dtw_ens_min
+result_eval_rmse_with_indiv = eval_files_concat(df_to_concat)
+
+
+#%%
+#save result to file
+eval_file_='data/evals_tmp/evaluation_result_rmse_H_dominio_cluster_All_ind.pkl'
+with open(eval_file_,'wb') as handle:
+    pickle.dump(result_eval_rmse_with_indiv, handle, protocol=pickle.HIGHEST_PROTOCOL)
+print (eval_file)
+
+#%% gere latex
+#para savar a tabela no formato latex precisa retirar as colunas como indices, se index=False
+result=result_eval_rmse_with_indiv.reset_index()
+#%%
+latex_table = result_eval_rmse_with_indiv.to_latex(index=True)
+#%%
+# Save the LaTeX code to a .tex file
+latex_file_path = 'latex/tables/result_eval_rmse_with_all_indiv.tex'
+with open(latex_file_path, 'w') as f:
+    f.write(latex_table)
 #%%
 quit()
 ################################################ Para baixo sao testes
@@ -420,6 +486,8 @@ for x in eval_H_cluster_euc_ind:
     df_tmp[x] = get_small_metric_row_ind(eval_H_cluster_euc_ind[x], error_metric, col_index_to_filter='level',bottom=0, both=0)
 #%%
 df_tmp_full= eval_files_concat(df_tmp)
+
+
 
 #%%
 #gero um df com o menores de cada hierarquia e 
