@@ -13,7 +13,6 @@ from hierarchicalforecast.evaluation import HierarchicalEvaluation
 from utils.metricas import rmse, mase
 ''''
 Gera as predicoes com os clusters do dataset tourism
-teste
 '''
 if __name__=='__main__':
 
