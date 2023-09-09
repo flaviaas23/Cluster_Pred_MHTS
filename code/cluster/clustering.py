@@ -60,7 +60,8 @@ class Clustering:
     
     def cria_SimilarityMatrix(self, dic_cluster):
         '''
-        Generate a frequency/similarity/Coassociation matrix based on clustering of time series
+        Generate a frequency/similarity/Co-association matrix based on 
+        silhouette of clustering of time series
         '''
         n_clusters = list(dic_cluster.keys())  
         nrow = len(dic_cluster[n_clusters[0]]['cluster'])
@@ -87,7 +88,37 @@ class Clustering:
         #print ("freq_matrix = \n", freq_matrix)
         return freq_matrix            
         
-    def save_similarity_matrix(self, dic_cluster, similarity_matrix):
+    def cria_SimilarityMatrix_freq(self, dic_cluster):
+        '''
+        Generate a frequency/similarity/Co-association matrix based on 
+        frequency of point are together in the clustering of time series
+        '''
+        n_clusters = list(dic_cluster.keys())  
+        nrow = len(dic_cluster[n_clusters[0]]['cluster'])
+        print ("nrow= {}, len nclusters = {}".format(nrow, len(n_clusters)))
+        s = (nrow, nrow)
+        freq_matrix= np.zeros(s)
+        for n in n_clusters:
+            #print ("n = ",n)
+            #sil = dic_cluster[n]['sample_silhouette_values']
+            cluster = dic_cluster[n]['cluster']
+            #print ("sil= ",sil,"\ncluster = ",cluster)
+            for i in range(0, (nrow)):            
+                #print ("i = ",i)
+                for j in range(0, nrow):
+                    #print ("j = ",j , cluster[i], cluster[j], sil[i], sil[j])
+                    if cluster[i] == cluster[j]:
+
+                        #freq = (sil[i]+sil[j]+2)/4
+                        freq_matrix[i,j] += 1 # freq
+                        #print ("j = ",j , cluster[i], cluster[j], sil[i], sil[j], freq)
+
+            #print ("freq_matrix = \n", freq_matrix)
+        freq_matrix= freq_matrix/len(n_clusters)
+        #print ("freq_matrix = \n", freq_matrix)
+        return freq_matrix        
+    
+    def save_similarity_matrix(self, dic_cluster, similarity_matrix, type_similarity):
         '''        
         Save to similarity matrix to pickle file
         '''
@@ -101,7 +132,7 @@ class Clustering:
         with open(self.raw_dir+pickle_file+'_similarity_matrix.pkl', 'wb') as handle:
             pickle.dump(obj_cluster, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
-        print ("file save: ", self.raw_dir+pickle_file+'_similarity_matrix.pkl')
+        print ("file save: ", self.raw_dir+pickle_file+type_similarity+'_similarity_matrix.pkl')
 
         return
     

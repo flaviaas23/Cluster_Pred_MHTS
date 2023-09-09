@@ -31,7 +31,7 @@ from cluster.clustering import Clustering
 import multiprocessing
 nproc = multiprocessing.cpu_count()
 '''
-20230808: Program to create a frequency matrix based on cluster (CALC_SIMILARITY = 1)
+20230808: Program to create a frequency matrix(co-association) based on cluster (CALC_SIMILARITY = 1)
           Calculate the clusters using frequency matrix (CALC_SIMILARITY = 0)
 '''
 
@@ -80,7 +80,7 @@ PROCESSED_DIR = 'data/processed/'
 SAVE_DIR = "data/cluster/"
 DATA_CLUSTER_DIR = 'data/cluster/'
 
-TMP_DIR = "../tmp/"
+#TMP_DIR = "../tmp/"
 num_interval = 4  #interval to save temp results
 
 #load cluster   
@@ -88,7 +88,7 @@ pickle_cluster_file = 'Tourism_bottom_pivot_cluster_euclidean_20230814_0049.pkl'
 #pickle_cluster_file = 'Tourism_bottom_pivot_cluster_dtw_20230814_0046.pkl' #'Tourism_bottom_pivot_cluster_dtw_20230731_1718.pkl'
 cluster = Clustering(DATA_CLUSTER_DIR, pickle_cluster_file)
 
-CALC_SIMILARITY = 0
+CALC_SIMILARITY = 1
 if CALC_SIMILARITY:
     # #load cluster   
     # #pickle_cluster_file = 'Tourism_bottom_pivot_cluster_euclidean_20230731_1706.pkl'
@@ -102,7 +102,7 @@ if CALC_SIMILARITY:
     print (similarity_matrix.shape)
 
     #save dic_cluster and its similarity_matrix to pickle 
-    cluster.save_similarity_matrix(dic_cluster, similarity_matrix)
+    cluster.save_similarity_matrix(dic_cluster, similarity_matrix, "_freq")
 else: 
     # read similarity matrix from pickle file
     pickle_file_sim = 'Tourism_bottom_pivot_cluster_euclidean_20230814_0049_similarity_matrix.pkl'#'Tourism_bottom_pivot_cluster_euclidean_20230731_1706_similarity_matrix.pkl'
