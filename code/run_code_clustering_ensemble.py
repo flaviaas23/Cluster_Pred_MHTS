@@ -89,6 +89,7 @@ pickle_cluster_file = 'Tourism_bottom_pivot_cluster_euclidean_20230814_0049.pkl'
 cluster = Clustering(DATA_CLUSTER_DIR, pickle_cluster_file)
 
 CALC_SIMILARITY = 1
+type_similarity = "_freq"       # if similarity based on freq: "_freq", if based on sillhouette:''
 if CALC_SIMILARITY:
     # #load cluster   
     # #pickle_cluster_file = 'Tourism_bottom_pivot_cluster_euclidean_20230731_1706.pkl'
@@ -98,11 +99,15 @@ if CALC_SIMILARITY:
     print (dic_cluster.keys(), dic_cluster[2].keys())
 
     #calculate similarity matrix
-    similarity_matrix = cluster.cria_SimilarityMatrix(dic_cluster)
+    if not type_similarity:
+        #based on silhouette value
+        similarity_matrix = cluster.cria_SimilarityMatrix(dic_cluster)
+    else:
+        similarity_matrix = cluster.cria_SimilarityMatrix_freq(dic_cluster)
     print (similarity_matrix.shape)
 
     #save dic_cluster and its similarity_matrix to pickle 
-    cluster.save_similarity_matrix(dic_cluster, similarity_matrix, "_freq")
+    cluster.save_similarity_matrix(dic_cluster, similarity_matrix, type_similarity)
 else: 
     # read similarity matrix from pickle file
     pickle_file_sim = 'Tourism_bottom_pivot_cluster_euclidean_20230814_0049_similarity_matrix.pkl'#'Tourism_bottom_pivot_cluster_euclidean_20230731_1706_similarity_matrix.pkl'

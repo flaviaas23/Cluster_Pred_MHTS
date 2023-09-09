@@ -128,11 +128,11 @@ class Clustering:
         }
        
         pickle_file = self.raw_file.split(".")[0]
-
-        with open(self.raw_dir+pickle_file+'_similarity_matrix.pkl', 'wb') as handle:
+        file_to_save = self.raw_dir+pickle_file+type_similarity+'_similarity_matrix.pkl'
+        with open(file_to_save, 'wb') as handle:
             pickle.dump(obj_cluster, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
-        print ("file save: ", self.raw_dir+pickle_file+type_similarity+'_similarity_matrix.pkl')
+        print ("file save: ", file_to_save)
 
         return
     
