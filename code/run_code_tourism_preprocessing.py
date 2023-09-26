@@ -53,10 +53,11 @@ if __name__=='__main__':
     Y_df_bottom_pivot.reset_index(inplace=True)
     print ("{}\n".format(Y_df_bottom_pivot.head(2)))
 
-    # saving to pickle file
+    # saving bottom (folhas) to pickle file
     print (os.getcwd())
     Y_df_bottom_pivot.to_pickle(PROCESSED_DIR+'Tourism_bottom_pivot.pkl')
 
+    #############################
     #### Save to pickle file the aggregate, needs to have Y_df2 to be used for dominio 
     #    and Y_df with unique column to be used with clusters
 

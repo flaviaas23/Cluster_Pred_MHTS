@@ -27,7 +27,7 @@ def add_columns_info_to_eval_df(eval_df, strategy, d_metric, cluster_method):
 if __name__=='__main__':
 
     print (os.getcwd())
-    RAW_DIR = '../../Data_MHTS/'
+    RAW_DIR = '../../../Data_MHTS/' # '../../Data_MHTS/', no apple novo ../../../Data_MHTS
     #RAW_FILE = 'tourism.csv'
     RAW_FILE = 'raw.githubusercontent.com_Nixtla_transfer-learning-time-series_main_datasets_tourism.csv'
 

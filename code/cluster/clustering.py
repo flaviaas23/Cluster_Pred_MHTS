@@ -167,9 +167,11 @@ class Clustering:
         '''    
         obj_cluster = {}
         #n_clusters = list(dic_cluster_sim['dic_cluster'].keys())
+        #print (dist_sim_matrix)
         for n in tqdm(n_clusters):
+            #print ("n= ", n)
             clusters, clusters_center, = self.cria_grupos_kmeans(n, dist_sim_matrix)
-            
+            #print ("clusters: ", clusters)
             # The silhouette_score gives the average value for all the samples.
             # This gives a perspective into the density and separation of the formed
             # clusters
@@ -234,10 +236,28 @@ class Clustering:
     
         return eval_df
             
+    def select_clusters(self, dic_cluster, typeofmeas='mean', sil_meas_thr=0.45):
+        ''''
+        Select clusters based on value of sillouette
+        mean, median , return which groups of clusters
+        '''
+        media=[]
+        mediana=[]
+        desvio=[]
+        for k in dic_cluster.keys():
+            sil_values = dic_cluster[k]['sample_silhouette_values']
+            media.append(np.mean(sil_values))
+            mediana.append(np.median(sil_values))
+            desvio.append(np.std(sil_values))
 
+        if typeofmeas == 'mean':
+            clusters = [i+2 for i, valor in enumerate(media) if valor >= sil_meas_thr]
+        elif typeofmeas == 'median':
+            clusters = [i+2 for i, valor in enumerate(media) if valor >= sil_meas_thr]
         
-        
-        
+        stats_df = pd.DataFrame([media, mediana,desvio]).T
+        stats_df=stats_df.rename(columns={0:'media',1:'mediana',2:'desvio'})
+        return clusters, stats_df
         
 
             

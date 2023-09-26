@@ -21,22 +21,30 @@ def df_cols_to_numeric(df):
 
     return df
 
-def get_rows_from_cols(df,e_metric, cols):
+#%%
+def get_rows_from_cols(df, e_metric, cols, col_index_to_filter='level'):
     ''''
     From df returns row filtered
     cols=columns index values to be filtered
     '''
+    print ('e_metric= , cols=, col_index_to_filter='.format(e_metric, cols, col_index_to_filter))
+    print (df.head(1))
     mask1 = df.index.get_level_values('metric').isin([e_metric])
     df2 = df.loc[mask1]
-    df2_ = df2.loc[[cols]]
-
+    print (df2.head(1))
+    #df2_ = df2.loc[[cols]]
+    mask2 = df2.index.get_level_values(col_index_to_filter)
+    mask2=[x for x in mask2 if cols in x]
+    print ('mask2',mask2)
+    df2_ = df2.loc[mask2]
+    print (df2.head(1))
     return df2_
 
 #### for clusters hierarchies
 #%%
 def get_small_metric_row(df, e_metric, both=0):
     ''''
-    Receives a df and returns its row with small column metric value
+    Receives a df and returns its row(s) with small column metric value
     '''
     #makes sure the errors columns values are numeric
     df = df_cols_to_numeric(df)
@@ -117,45 +125,187 @@ eval_files = glob.glob(padrao)
  '../data/evals_tmp/evaluation_H_cluster_dtw_ensemble_All.pkl']
 
 #%%
+def gen_df_row_dom(eval_dir, error_metric, padrao, cols):
+    '''
+    gets row with bets metric
+    '''
+    eval_H = read_files(eval_dir, padrao)
+    print (eval_H)
+
+    df = get_rows_from_cols(eval_H[0], error_metric, cols) #eval_H_dom2.loc[['H_Dominio']]
+
+    return df 
+
+#%%
+def gen_df_row_cluster(eval_dir, error_metric, padrao):
+    '''
+    gets row with bets metric
+    '''
+    eval_H = read_files(eval_dir, padrao)
+    #print (eval_H)
+
+    df = get_small_metric_row(eval_H[0], error_metric) #H_Cluster13_All
+
+    return df 
+
+
+#%%
 ### Dominio only
+'''
 eval_file = [x for x in eval_files if 'H_dominio.' in x][0]
 eval_H_dom = pd.read_pickle(eval_file)
 eval_H_dom = df_cols_to_numeric(eval_H_dom)
+'''
+#%%
+### Dominio only
+error_metric= 'rmse'
+padrao = 'H_dominio'
+cols = 'H_Dominio'
+df9_ = gen_df_row_dom(eval_dir, error_metric, padrao, cols)
 #%%
 ### dominio with clusters euclidean
-eval_file = [x for x in eval_files if 'H_dominio_cluster_euclidean_All' in x][0]
-eval_H_dom_cluster_euc = pd.read_pickle(eval_file)
-eval_H_dom_cluster_euc = df_cols_to_numeric(eval_H_dom_cluster_euc)
-
+eval_dir_all=eval_dir+'All/'
+padrao_dom_clu_euc_all = 'H_dominio_cluster_euclidean_All'
+df5_ = gen_df_row_dom(eval_dir_all, error_metric, padrao_dom_clu_euc_all, cols)
 #%%
-eval_file = [x for x in eval_files if 'H_dominio_cluster_euclidean_ensemble_All' in x][0]
+#verificar qual Hierarquia de cluster tem menor  rmse na estrategia dom+cluster
+df5_cl = gen_df_row_dom(eval_dir_all,error_metric, padrao_dom_clu_euc_all, 'H_Cluster')
+df5_cl_min= get_small_metric_row_ind(df5_cl, error_metric)
+#%%
+### dominio with clusters euclidean ensemble
+'''
+eval_file = [x for x in eval_files if 'H_dominio_cluster_euclidean_ensemble_sil_All' in x][0]
 eval_H_dom_cluster_euc_ensemble = pd.read_pickle(eval_file)
 eval_H_dom_cluster_euc_ensemble = df_cols_to_numeric(eval_H_dom_cluster_euc_ensemble)
+df6_ = get_rows_from_cols(eval_H_dom_cluster_euc_ensemble, error_metric,'H_Dominio') #eval_H_dom_cluster_euc_ensemble2.loc[['H_Dominio']]
+'''
+#%%
+### dominio with clusters euclidean ensemble
+padrao_dom_clu_euc_ens_all = 'H_dominio_cluster_euclidean_ensemble_sil_All'
+df6_sil = gen_df_row_dom(eval_dir_all, error_metric, padrao_dom_clu_euc_ens_all, cols)
+#%%
+#verificar qual Hierarquia de cluster tem menor  rmse na estrategia dom + cluster
+df6_sil_cl = gen_df_row_dom(eval_dir_all, error_metric, padrao_dom_clu_euc_ens_all, 'H_Cluster')
+df6_sil_cl_min= get_small_metric_row_ind(df6_sil_cl, error_metric)
+
+#%%
+padrao_dom_clu_euc_ens_all = 'H_dominio_cluster_euclidean_ensemble_freq_All'
+df6_freq = gen_df_row_dom(eval_dir_all, error_metric, padrao_dom_clu_euc_ens_all, cols)
+#%%
+#verificar qual Hierarquia de cluster tem menor  rmse na estrategia dom + cluster
+df6_freq_cl = gen_df_row_dom(eval_dir_all,error_metric, padrao_dom_clu_euc_ens_all, 'H_Cluster')
+df6_freq_cl_min= get_small_metric_row_ind(df6_freq_cl, error_metric)
 
 #%%
 ### dominio with clusters dtw
-eval_file = [x for x in eval_files if 'H_dominio_cluster_dtw_All' in x][0]
-eval_H_dom_cluster_dtw = pd.read_pickle(eval_file)
-eval_H_dom_cluster_dtw = df_cols_to_numeric(eval_H_dom_cluster_dtw)
+padrao_dom_clu_dtw_all = 'H_dominio_cluster_dtw_All'
+df7_ = gen_df_row_dom(eval_dir_all, error_metric, padrao_dom_clu_dtw_all, cols)
+#%%
+#verificar qual Hierarquia de cluster tem menor  rmse na estrategia dom + cluster
+df7_cl = gen_df_row_dom(eval_dir_all, error_metric, padrao_dom_clu_dtw_all, 'H_Cluster')
+df7_cl_min= get_small_metric_row_ind(df7_cl, error_metric)
 
-eval_file = [x for x in eval_files if 'H_dominio_cluster_dtw_ensemble_All' in x][0]
-eval_H_dom_cluster_dtw_ensemble = pd.read_pickle(eval_file)
-eval_H_dom_cluster_dtw_ensemble = df_cols_to_numeric(eval_H_dom_cluster_dtw_ensemble)
+padrao_dom_clu_dtw_ens_all = 'H_dominio_cluster_dtw_ensemble_sil_All'
+df8_sil = gen_df_row_dom(eval_dir_all, error_metric, padrao_dom_clu_dtw_ens_all, cols)
+#verificar qual Hierarquia de cluster tem menor  rmse na estrategia dom + cluster
+df8_sil_cl = gen_df_row_dom(eval_dir_all, error_metric, padrao_dom_clu_dtw_ens_all, 'H_Cluster')
+df8_sil_cl_min= get_small_metric_row_ind(df8_sil_cl, error_metric)
+
+padrao_dom_clu_dtw_ens_all = 'H_dominio_cluster_dtw_ensemble_freq_All'
+df8_freq = gen_df_row_dom(eval_dir_all, error_metric, padrao_dom_clu_dtw_ens_all, cols)
+#verificar qual Hierarquia de cluster tem menor  rmse na estrategia dom + cluster
+df8_freq_cl = gen_df_row_dom(eval_dir_all, error_metric, padrao_dom_clu_dtw_ens_all, 'H_Cluster')
+df8_freq_cl_min= get_small_metric_row_ind(df8_freq_cl, error_metric)
 
 #%%
-### Clusters euclidean -All
+'''
+# ## Clusters euclidean -All
 eval_file = [x for x in eval_files if 'H_cluster_euclidean_All' in x][0]
 eval_H_cluster_euc = pd.read_pickle(eval_file)
-eval_file = [x for x in eval_files if 'H_cluster_euclidean_ensemble_All' in x][0]
+df1_ = get_small_metric_row(eval_H_cluster_euc, error_metric) #H_Cluster13_All
+
+eval_file = [x for x in eval_files if 'H_cluster_euclidean_ensemble_sil_All' in x][0]
 eval_H_cluster_euc_ensemble = pd.read_pickle(eval_file)
+#'''
+
+#%%
+# Clusters euclidean - All
+padrao_clu = 'H_cluster_euclidean_All'
+df1_ = gen_df_row_cluster(eval_dir_all, error_metric, padrao_clu)
+# Clusters euclidean with ensemble - All
+# ens silhouette
+padrao_clu = 'H_cluster_euclidean_ensemble_sil_All'
+df2_sil = gen_df_row_cluster(eval_dir_all, error_metric, padrao_clu)
+#ens Frequency
+padrao_clu = 'H_cluster_euclidean_ensemble_freq_All'
+df2_freq = gen_df_row_cluster(eval_dir_all, error_metric, padrao_clu)
+
 #%%
 ### Clusters dtw
-eval_file = [x for x in eval_files if 'H_cluster_dtw_All' in x][0]
-eval_H_cluster_dtw = pd.read_pickle(eval_file)
-eval_file = [x for x in eval_files if 'H_cluster_dtw_ensemble_All' in x][0]
-eval_H_cluster_dtw_ensemble = pd.read_pickle(eval_file)
 
+padrao_clu = 'H_cluster_dtw_All'
+df3_ = gen_df_row_cluster(eval_dir_all, error_metric, padrao_clu)       #['H_Cluster8_All']]
+# Clusters dtw with ensemble - All
+# ens silhouette
+padrao_clu = 'H_cluster_dtw_ensemble_sil_All'
+df4_sil = gen_df_row_cluster(eval_dir_all, error_metric, padrao_clu)    #2.loc[['H_Cluster17_All']]
+# ens Frequency
+padrao_clu = 'H_cluster_dtw_ensemble_freq_All'
+df4_freq = gen_df_row_cluster(eval_dir_all, error_metric, padrao_clu)
 
+#%%
+result_eval_rmse_all = pd.concat([df1_, df2_sil, df2_freq, \
+                             df3_, df4_sil, df4_freq, \
+                             df5_, df5_cl_min, \
+                             df6_sil, df6_sil_cl_min, df6_freq, df6_freq_cl_min,\
+                             df7_, df7_cl_min, \
+                             df8_sil, df8_sil_cl_min, df8_freq, df8_freq_cl_min,
+                             df9_], axis=0) 
+#del df1_,df2_, df3_,df4_, df5_,df6_, df7_,df8_, df9_
+
+### 14/09/2023
+def get_result_H_cluster_selection(eval_dir_all, error_metric, all='', seleuc='', seldtw=''):
+    ''' not ready
+    return df result 
+    '''
+    # Clusters euclidean - All
+    if all:
+        padrao_clu = 'H_cluster_euclidean_'+all
+    elif seleuc:
+        padrao_clu = 'H_cluster_euclidean_'+seleuc
+    df1_ = gen_df_row_cluster(eval_dir_all, error_metric, padrao_clu)
+    # Clusters euclidean with ensemble - All
+    # ens silhouette
+    padrao_clu = 'H_cluster_euclidean_ensemble_sil'
+    df2_sil = gen_df_row_cluster(eval_dir_all, error_metric, padrao_clu)
+    #ens Frequency
+    padrao_clu = 'H_cluster_euclidean_ensemble_freq'
+    df2_freq = gen_df_row_cluster(eval_dir_all, error_metric, padrao_clu)
+    
+    ### Clusters dtw
+    if all:
+        padrao_clu = 'H_cluster_dtw_'+all
+    elif seldtw:
+        padrao_clu = 'H_cluster_dtw_'+seldtw
+
+    df3_ = gen_df_row_cluster(eval_dir_all, error_metric, padrao_clu)       #['H_Cluster8_All']]
+    # Clusters dtw with ensemble - All
+    # ens silhouette
+    padrao_clu = 'H_cluster_dtw_ensemble_sil'
+    df4_sil = gen_df_row_cluster(eval_dir_all, error_metric, padrao_clu)    #2.loc[['H_Cluster17_All']]
+    # ens Frequency
+    padrao_clu = 'H_cluster_dtw_ensemble_freq'
+    df4_freq = gen_df_row_cluster(eval_dir_all, error_metric, padrao_clu)
+
+    result_eval_selection = pd.concat([df1_, df2_sil, df2_freq, 
+                                 df3_, df4_sil, df4_freq, 
+                                ], axis=0) 
+    return result_eval_selection   
+
+#%%
+result_eval_clusters_all = result_H_cluster_selection(eval_dir_all, error_metric, all='All', seleuc='', seldtw='')
+
+### fim 14/09/2023
 
 #%%
 error_metric = 'rmse'
@@ -166,7 +316,7 @@ eval_H_cluster_euc = df_cols_to_numeric(eval_H_cluster_euc)
 
 mask1 = eval_H_cluster_euc.index.get_level_values('metric').isin(['rmse'])
 eval_H_cluster_euc2 = eval_H_cluster_euc.loc[mask1]
-#para excluir o botto e pegar a hierarquia , pedo o segundo menor
+#para excluir o bottom e pegar a hierarquia , pedo o segundo menor
 index_second=eval_H_cluster_euc2['MinTrace(mint_shrink)'].nsmallest(2).index[1]
 df1_= eval_H_cluster_euc2.loc[[index_second]]
 
@@ -262,14 +412,16 @@ def list_files_to_read( eval_dir, padrao):
         eval_dir='data/evals_tmp/'
 
 
-    padrao_ = os.path.join(eval_dir, '*_'+padrao+'.pkl') #euclidean_Individual.pkl')
+    #14/09/2023 padrao_ = os.path.join(eval_dir, '*_'+padrao+'.pkl') #euclidean_Individual.pkl')
+    padrao_ = os.path.join(eval_dir, '*_'+padrao) #euclidean_Individual.pkl')
+
     print ("padrao: ", padrao_)
 
     eval_files = glob.glob(padrao_)
     print ("eval_files", eval_files)
 
     return eval_files
-
+#%%
 def read_files(eval_dir, padrao):
     ''''
     read a list of files based on a padrao
@@ -326,8 +478,11 @@ padrao = 'euclidean_Individual'
 df_euc_min = get_best_df_row_metric_H_cluster_ind(eval_dir, padrao, metric)
 #%% 
 ############ Euclidean ensemble
-padrao_ensemble = 'euclidean_ensemble_Individual'
-df_euc_ensemble_min = get_best_df_row_metric_H_cluster_ind(eval_dir, padrao_ensemble, metric)
+padrao_ensemble = 'euclidean_ensemble_sil_Individual'
+df_euc_ensemble_sil_min = get_best_df_row_metric_H_cluster_ind(eval_dir, padrao_ensemble, metric)
+
+padrao_ensemble = 'euclidean_ensemble_freq_Individual'
+df_euc_ensemble_freq_min = get_best_df_row_metric_H_cluster_ind(eval_dir, padrao_ensemble, metric)
 ############ fim euclidean
 #%%
 ######### DTW
@@ -337,18 +492,24 @@ df_dtw_min = get_best_df_row_metric_H_cluster_ind(eval_dir, padrao_dtw, metric)
 #%%
 ######### DTW Ensemble
 #eval_dir = 'data/evals_tmp/individuals/'
-padrao_dtw_ens = 'dtw_ensemble_Individual'
-df_dtw_ensemble_min = get_best_df_row_metric_H_cluster_ind(eval_dir, padrao_dtw_ens, metric)
+padrao_dtw_ens = 'dtw_ensemble_sil_Individual'
+df_dtw_ensemble_sil_min = get_best_df_row_metric_H_cluster_ind(eval_dir, padrao_dtw_ens, metric)
+
+padrao_dtw_ens = 'dtw_ensemble_freq_Individual'
+df_dtw_ensemble_freq_min = get_best_df_row_metric_H_cluster_ind(eval_dir, padrao_dtw_ens, metric)
 ########### End DTW analysis
 #%%
 #### Adcionar o resultado destas hierarquias no result_table 
 # e salvar num arquivo e gerar latex format
 df_to_concat={}
-df_to_concat[0]= result_eval_rmse 
-df_to_concat[1]=df_euc_min
-df_to_concat[2]=df_euc_ensemble_min 
-df_to_concat[3]=df_dtw_min 
-df_to_concat[4]=df_dtw_ensemble_min
+df_to_concat[0] = result_eval_rmse_all 
+df_to_concat[1] = df_euc_min
+df_to_concat[2] = df_euc_ensemble_sil_min 
+df_to_concat[3] = df_euc_ensemble_freq_min 
+df_to_concat[4] = df_dtw_min 
+df_to_concat[5] = df_dtw_ensemble_sil_min
+df_to_concat[6] = df_dtw_ensemble_freq_min
+
 result_eval_rmse_with_indiv= eval_files_concat(df_to_concat)
 
 #%%
@@ -444,6 +605,7 @@ eval_file='data/evals_tmp/evaluation_result_rmse_H_dominio_cluster.pkl'
 #%%
 #read the file with results
 df_eval_= pd.read_pickle(eval_file) 
+#or use 
 #%%
 #### Adcionar o resultado destas hierarquias no result_table 
 # e salvar num arquivo e gerar latex format
@@ -512,7 +674,7 @@ quit()
 # mask2 = eval_H_cluster_euc.index != index_value_to_exclude
 #eval_H_cluster_euc_2 = eval_H_cluster_euc_2.loc[mask2]
 # eval_H_cluster_euc_2['MinTrace(mint_shrink)']=eval_H_cluster_euc_2['MinTrace(mint_shrink)'].astype(float)
-# column_to_check = 'MinTrace(mint_shrink)'
+# column_to_check = 'MinTrace(mint_shrink
 # index_with_second_smallest_value = eval_H_cluster_euc_2[column_to_check].nsmallest(2).index[1]
 # index_with_second_smallest_value
 

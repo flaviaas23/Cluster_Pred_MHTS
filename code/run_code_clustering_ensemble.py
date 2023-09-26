@@ -88,7 +88,7 @@ pickle_cluster_file = 'Tourism_bottom_pivot_cluster_euclidean_20230814_0049.pkl'
 #pickle_cluster_file = 'Tourism_bottom_pivot_cluster_dtw_20230814_0046.pkl' #'Tourism_bottom_pivot_cluster_dtw_20230731_1718.pkl'
 cluster = Clustering(DATA_CLUSTER_DIR, pickle_cluster_file)
 
-CALC_SIMILARITY = 1
+CALC_SIMILARITY = 0
 type_similarity = "_freq"       # if similarity based on freq: "_freq", if based on sillhouette:''
 if CALC_SIMILARITY:
     # #load cluster   
@@ -110,9 +110,14 @@ if CALC_SIMILARITY:
     cluster.save_similarity_matrix(dic_cluster, similarity_matrix, type_similarity)
 else: 
     # read similarity matrix from pickle file
-    pickle_file_sim = 'Tourism_bottom_pivot_cluster_euclidean_20230814_0049_similarity_matrix.pkl'#'Tourism_bottom_pivot_cluster_euclidean_20230731_1706_similarity_matrix.pkl'
+    # usando a matriz de silhouette
+    #pickle_file_sim = 'Tourism_bottom_pivot_cluster_euclidean_20230814_0049_similarity_matrix.pkl'#'Tourism_bottom_pivot_cluster_euclidean_20230731_1706_similarity_matrix.pkl'
+    #usando a matriz de similaridade de freq
+    pickle_file_sim = 'Tourism_bottom_pivot_cluster_euclidean_20230814_0049_freq_similarity_matrix.pkl'#'Tourism_bottom_pivot_cluster_euclidean_20230731_1706_similarity_matrix.pkl'
     #
     # pickle_file_sim = 'Tourism_bottom_pivot_cluster_dtw_20230814_0046_similarity_matrix.pkl' #'Tourism_bottom_pivot_cluster_dtw_20230731_1718_similarity_matrix.pkl'
+    # dist matrix based on freq of points together
+    pickle_file_sim = 'Tourism_bottom_pivot_cluster_dtw_20230814_0046_freq_similarity_matrix.pkl' #'Tourism_bottom_pivot_cluster_dtw_20230731_1718_similarity_matrix.pkl'
     dic_cluster_sim = cluster.load_similarity(DATA_CLUSTER_DIR, pickle_file_sim)
 
     dist_sim_matrix = 1 - dic_cluster_sim['similarity_matrix']

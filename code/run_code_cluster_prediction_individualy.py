@@ -12,28 +12,34 @@ from hierarchicalforecast.evaluation import HierarchicalEvaluation
 
 from utils.metricas import rmse, mase
 ''''
-Gera as predicoes apenas dos clusters do dataset tourism mas com todos os clusters 
+Gera as predicoes apenas dos clusters do dataset tourism mas com cada cluster 
 nas predicoes e nas reconciliacoes
 '''
 if __name__=='__main__':
 
     print (os.getcwd())
-    RAW_DIR = '../../Data_MHTS/'
+    RAW_DIR = '../../../Data_MHTS/' # no apple novo ../../../Data_MHTS
     #RAW_FILE = 'tourism.csv'
     RAW_FILE = 'raw.githubusercontent.com_Nixtla_transfer-learning-time-series_main_datasets_tourism.csv'
 
     DATA_CLUSTER_DIR = 'data/cluster/'
-    #cluster pickle files without ensemble
+    #1 cluster pickle files without ensemble
     #pickle_cluster_file = 'Tourism_bottom_pivot_cluster_euclidean_20230814_0049.pkl' 
                         #'Tourism_bottom_pivot_cluster_euclidean_20230731_1706.pkl'
     #pickle_cluster_file = 'Tourism_bottom_pivot_cluster_dtw_20230814_0046.pkl'
     #                   #"Tourism_bottom_pivot_cluster_dtw_20230731_1718.pkl"
     
-    #file with cluster using dist matrix of ensembled clusters
+    #2 file with cluster using dist matrix of ensembled clusters with silhouette
     #pickle_cluster_file = 'Tourism_bottom_pivot_cluster_euclidean_20230814_0049_similarity_matrix_ensemble.pkl'
                           #"Tourism_bottom_pivot_cluster_euclidean_20230731_1706_similarity_matrix_ensemble.pkl"
-    pickle_cluster_file = 'Tourism_bottom_pivot_cluster_dtw_20230814_0046_similarity_matrix_ensemble.pkl'
+    #pickle_cluster_file = 'Tourism_bottom_pivot_cluster_dtw_20230814_0046_similarity_matrix_ensemble.pkl'
                           #"Tourism_bottom_pivot_cluster_dtw_20230731_1718_similarity_matrix_ensemble.pkl"
+
+    #3 file with cluster using dist matrix of ensembled clusters based on frequency of points together
+    #pickle_cluster_file = 'Tourism_bottom_pivot_cluster_euclidean_20230814_0049_freq_similarity_matrix_ensemble.pkl'
+    pickle_cluster_file = 'Tourism_bottom_pivot_cluster_dtw_20230814_0046_freq_similarity_matrix_ensemble.pkl'
+
+
     ######### 1. Load and Process Data
     australia = Preprocessing(RAW_DIR, RAW_FILE) 
     Y_df = australia.load_preprocess_tourism()
@@ -58,7 +64,7 @@ if __name__=='__main__':
     # dic_cluster17={}
     # dic_cluster17[17] = dic_cluster[17]
     #coloca num dic apenas um cluster por vez
-    n=2
+    #n=2
     n_clusters = list(dic_cluster.keys())
     print ("n_clusters: ", n_clusters)
     for n in n_clusters:
@@ -70,7 +76,7 @@ if __name__=='__main__':
         #Y_df_cluster, spec_cluster = cluster.gen_df_tourism_cluster(dic_cluster, Y_df)
         Y_df_cluster, spec_cluster = cluster.gen_df_tourism_cluster(dic_cluster_ind, Y_df)
 
-        print ("Ydfcluster:",spec_cluster, Y_df_cluster.shape,"\n", Y_df_cluster.head(2))
+        #print ("Ydfcluster:",spec_cluster, Y_df_cluster.shape,"\n", Y_df_cluster.head(2))
 
         #spec_cluster.append(['Country', 'State', 'Region', 'Purpose'])
         #for cluster hierarchical only add Country(Total) and bottom(sleaves)
@@ -79,7 +85,7 @@ if __name__=='__main__':
         print ("spec_cluster;\n",spec_cluster)
         Y_df_cluster, S_df_cluster, tags_cluster = australia.aggregate_df(Y_df_cluster, spec_cluster)
         
-        print ("\nYdfcluster2:", Y_df_cluster.shape,"\n", Y_df_cluster.head(2))
+        #print ("\nYdfcluster2:", Y_df_cluster.shape,"\n", Y_df_cluster.head(2))
         #print ("{}\n, {}\n", Y_df2.head(2), tags)
         #print ("tags: ", tags)
         #print ("tags_cluster: ", tags_cluster)
@@ -88,7 +94,7 @@ if __name__=='__main__':
         steps = 8
         Y_test_df, Y_train_df=australia.split_test_train(Y_df_cluster, steps)
 
-        print (Y_test_df.shape, Y_train_df.shape, Y_df_cluster.shape)
+        #print (Y_test_df.shape, Y_train_df.shape, Y_df_cluster.shape)
 
         #######  2.Prediction
 
@@ -102,7 +108,7 @@ if __name__=='__main__':
                                                 md = model, fq = freq, h = steps
                                                 )
 
-        print ("{}\n, {}\n".format(Y_hat_df.head(2), Y_fitted_df.head(2)))
+        #print ("{}\n, {}\n".format(Y_hat_df.head(2), Y_fitted_df.head(2)))
 
         ####### 3. Reconcile forecasts
 
@@ -149,24 +155,36 @@ if __name__=='__main__':
         evaluation2.columns = ['Base', 'BottomUp', 'MinTrace(mint_shrink)', 'MinTrace(ols)']
         evaluation2 = evaluation2.applymap('{:.2f}'.format)
 
-        print ("type evaluation", type(evaluation2))
-        print ("evaluation2:\n", evaluation2)
-        #adding silhouette average information to evaluation table
+        #print ("type evaluation", type(evaluation2))
+        #print ("evaluation2:\n", evaluation2)
+        #adding silhouette average, median and standard deviation information to evaluation table
+        sil_values = dic_cluster_ind[n]['sample_silhouette_values']
+        #media.append(np.mean(sil_values))
+        mediana = np.median(sil_values)
+        desvio = np.std(sil_values)
         #for n in dic_cluster_ind.keys():
         evaluation2 = cluster.add_column_df(evaluation2, 'level','H_Cluster'+str(n), 'SilAvg', dic_cluster_ind[n]['silhouette_avg'])
+        evaluation2 = cluster.add_column_df(evaluation2, 'level','H_Cluster'+str(n), 'SilMedian', mediana)
+        evaluation2 = cluster.add_column_df(evaluation2, 'level','H_Cluster'+str(n), 'SilStdDev', desvio)
+
         evaluation2 = cluster.add_column_df(evaluation2, 'level','Cluster'+str(n), 'SilAvg', dic_cluster_ind[n]['silhouette_avg'])
+        evaluation2 = cluster.add_column_df(evaluation2, 'level','Cluster'+str(n), 'SilMedian', mediana)
+        evaluation2 = cluster.add_column_df(evaluation2, 'level','Cluster'+str(n), 'SilStdDev', desvio)
 
         type_h_pred_rec = 'Individual' #each  if for prediction and reconcliation were used all clusters groups or
                         # each group in the hierarchy
-        strategy_value = type_h_pred_rec+'_clusters Ensemble'
+        
         dist_metric = 'dtw' #'dtw' #'euclidean'
         cluster_method = 'KMeans'
+        ens = ' Ens'        #'', ' Ens'
+        type_ensemble = '_freq' #'_freq', _sil, ''
+        strategy_value = 'Ind_'+str(n)+'_clusters'+ens+type_ensemble   # Ens'
 
         evaluation2 = cluster.add_cluster_info_to_eval_df(evaluation2,\
                                                         strategy_value,\
                                                         dist_metric, cluster_method)
         print ("**** Evaluation Cluster Prediction ***")
-        print (evaluation2)
+        #print (evaluation2)
 
         print (os.getcwd())
 
@@ -178,8 +196,14 @@ if __name__=='__main__':
         #eval_file='data/evals_tmp/evaluation_H_cluster_dtw_all.pkl'
         #eval_file='data/evals_tmp/evaluation_H_cluster_euclidean_ensemble_all.pkl'
         #eval_file='data/evals_tmp/evaluation_H_cluster_dtw_ensemble_all.pkl'
-        #eval_file='data/evals_tmp/evaluation_H_cluster_{}_{}_{}.pkl'.format(n,dist_metric, type_h_pred_rec)
-        eval_file='data/evals_tmp/individuals/evaluation_H_cluster_{}_{}_ensemble_{}.pkl'.format(n, dist_metric, type_h_pred_rec)
+        #eval_file='data/evals_tmp/individuals/evaluation_H_cluster_{}_{}_{}.pkl'.format(n, dist_metric, type_h_pred_rec)
+        #eval_file='data/evals_tmp/individuals/evaluation_H_cluster_{}_{}_ensemble{}_{}.pkl'.format(n, dist_metric, type_ensemble, type_h_pred_rec)
+
+        if not ens:
+            eval_file='data/evals_tmp/individuals/evaluation_H_cluster_{}_{}_{}.pkl'.format(n, dist_metric, type_h_pred_rec)
+        else: 
+            eval_file='data/evals_tmp/individuals/evaluation_H_cluster_{}_{}_ensemble{}_{}.pkl'.format(n, dist_metric, type_ensemble, type_h_pred_rec)
+        
         with open(eval_file,'wb') as handle:
             pickle.dump(evaluation2, handle, protocol=pickle.HIGHEST_PROTOCOL)
         print (eval_file)    

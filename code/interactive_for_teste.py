@@ -1,5 +1,34 @@
 
 #%%
+from group_lasso import GroupLasso
+import numpy as np
+#%%
+# Example data
+X = np.array([[1,0,1,0],[0,1,0,1],[1,0,1,0], [0,1,0,0], [0,0,0,1]])  # 100 samples, 10 features
+groups = [0, 0, 1, 1, 1]  # Define groups for your features
+y=[0,0,0,0,0]
+# Initialize the Group Lasso model
+model = GroupLasso(groups=groups)  # Adjust alpha as needed
+# Fit the model to your data
+model.fit(X,y)  # Provide your target variable 'y' if you're doing supervised learning
+
+selected_clusters = np.where(np.any(model.coef_ != 0, axis=0))[0]
+
+#%%
+import math
+
+def combinacao(n, p):
+    if p < 0 or p > n:
+        return 0
+    return math.factorial(n) // (math.factorial(p) * math.factorial(n - p))
+
+n = 17  # O valor de n
+p = 8  # O valor de p
+
+resultado = combinacao(17, 8)
+print(f"A combinação de {n} escolha {p} é {resultado}")
+
+#%%
 import pandas as pd
 import numpy as np
 import os

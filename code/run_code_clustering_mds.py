@@ -1,6 +1,4 @@
 
-#%%
-
 import numpy as np
 import pandas as pd
 
@@ -37,7 +35,7 @@ from tqdm import tqdm
 from datetime import datetime
 
 import multiprocessing
-nproc = multiprocessing.cpu_count()
+nproc = multiprocessing.cpu_count()-2
 '''
 Gera os clusters para o dataset tourism
 '''
@@ -78,13 +76,13 @@ def cria_grupos(n_grupos, X_train, algoritmo, metrica_distancia, seed=997):
 
     return cluster_labels, clusters_centers
 
-#%%
+
 PROCESSED_DIR = 'data/processed/'
 
 # arquivos resultados do clustering
-SAVE_DIR = "data/cluster/"
+#SAVE_DIR = "data/cluster/"
 
-TMP_DIR = "../tmp/"
+#TMP_DIR = "../tmp/"
 num_interval = 4  #interval to save temp results
 
 # calendar= pd.read_csv(INPUT_DIR+"/calendar.csv")
@@ -104,7 +102,7 @@ if LOAD_DATA == "pickle":
 else:
     df_cluster =sales_train_val.copy()
     df_cluster['id'] = df_cluster.apply(lambda row: row['id'].split('_validation')[0],axis=1)
-#%%
+
 print (df_cluster.shape)
 
 group_dept = True
@@ -127,23 +125,34 @@ else:
     start_cols_dias = 6
 #fas 20230731 
 ''' 
-#%%
-#reading the tourism data
-data_file= 'Tourism_bottom_pivot'
-df_cluster_sample = pd.read_pickle(PROCESSED_DIR+data_file+'.pkl')
-print (df_cluster_sample.head(2))
+
+gefcom=True
+if gefcom:
+    #read the preprocessed file
+    data_file= 'gefcom2017_Y_df_bottom_pivot_df_cluster_sample'
+    file_to_read = PROCESSED_DIR+'gefcom2017/'+data_file+'.pkl'
+    SAVE_DIR = "data/cluster/gefcom2017/"
+
+else:
+    #reading the tourism data
+    data_file= 'Tourism_bottom_pivot'
+    file_to_read = PROCESSED_DIR+data_file+'.pkl'
+    SAVE_DIR = "data/cluster/"
+
+df_cluster_sample = pd.read_pickle(file_to_read)
+#print (df_cluster_sample.head(2))
 print ("shape: ",df_cluster_sample.shape)
 start_cols_dias = 1
 num_dias=df_cluster_sample.shape[1]
-print (df_cluster_sample.head(2).iloc[:,start_cols_dias:num_dias])
-#%%
+#print (df_cluster_sample.head(2).iloc[:,start_cols_dias:num_dias])
+
 #df_cluster_array=df_cluster_sample.iloc[:,6:].to_numpy()
 
 #gera o array a apartir do sample do dataset com num_dias dias
 #num_dias=df_cluster_sample.shape[1]-start_cols_dias   #1913
-num_dias=df_cluster_sample.shape[1]
+num_dias = df_cluster_sample.shape[1]
 
-df_cluster_array_1k=df_cluster_sample.iloc[:,start_cols_dias:num_dias].to_numpy()
+df_cluster_array_1k = df_cluster_sample.iloc[:,start_cols_dias:num_dias].to_numpy()
 #num_dias=df_cluster_sample.shape[1]#
 #print (df_cluster_array_1k)
 print ("start_cols_dias {} , num_dias {}, shape array: {}".format(start_cols_dias, num_dias, df_cluster_array_1k.shape))
@@ -154,13 +163,14 @@ t_clusters = int(df_cluster_array_1k.shape[0]**0.5) #numero de clusters a ser en
 range_n_clusters = [ i for i in range(2, t_clusters+1) ]
 print ("t_clusters, range_n_clusters",t_clusters, range_n_clusters)
 
-#%%
+#
 obj_cluster = {}
 
 #range_n_clusters =[2,3,4,5,6,7,8,9,10]
 seed=997
 distance_metric="euclidean"     #"dtw"    #"euclidean"
 
+#
 for n_clusters in tqdm(range(2, t_clusters+1)):
     #print ("n_clusters= ", n_clusters)
     #cluster_labels[n_cluster],silhouette_avg[n_clusters],sample_silhouette_values[n_clusters]=cria_grupos(n_clusters, df_cluster_array_1k, "Kmeans", "dtw", seed=997)
@@ -180,7 +190,7 @@ for n_clusters in tqdm(range(2, t_clusters+1)):
 
     obj_cluster[n_clusters] = {
         # "data": df_cluster_sample,# amostra
-        "data_file_name": PROCESSED_DIR+data_file+'.pkl',
+        "data_file_name": file_to_read, # PROCESSED_DIR+data_file+'.pkl',
         "seed": seed,
         "distance_metric": distance_metric,
         "cluster": clusters,     # [] resultado do cluster na amostra
@@ -197,6 +207,7 @@ for n_clusters in tqdm(range(2, t_clusters+1)):
     #     with open(TMP_DIR + pickle_file_tmp, 'wb') as handle:
     #         pickle.dump(obj_cluster, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
+
 #para criar e salvar o arquivo com os dados do cluster 
 pickle_cluster_file = data_file+"_cluster_"+distance_metric+"_"+datetime.today().strftime('%Y%m%d_%H%M')
 
@@ -211,4 +222,4 @@ with open(SAVE_DIR+pickle_cluster_file+'.pkl', 'wb') as handle:
 
 #print ("arquivo com os  dados: ", pickle_data_file)
 print ("arquivo com o cluster: ", pickle_cluster_file)
-# %%
+# 

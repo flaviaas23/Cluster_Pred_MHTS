@@ -28,12 +28,13 @@ from preprocessing import Preprocessing
 
 australia = Preprocessing()
 #%%
-RAW_DIR = '../../../../Data_MHTS/'
+RAW_DIR = '../../../Data_MHTS/'
 #RAW_FILE = 'tourism.csv'
 RAW_FILE = 'raw.githubusercontent.com_Nixtla_transfer-learning-time-series_main_datasets_tourism.csv'
 #%%
 Y_df = pd.read_csv(RAW_DIR+RAW_FILE)
 #Y_df = pd.read_csv('https://raw.githubusercontent.com/Nixtla/transfer-learning-time-series/main/datasets/tourism.csv')
+#%%
 Y_df = Y_df.rename({'Trips': 'y', 'Quarter': 'ds'}, axis=1)
 Y_df.insert(0, 'Country', 'Australia')
 Y_df = Y_df[['Country', 'Region', 'State', 'Purpose', 'ds', 'y']]
